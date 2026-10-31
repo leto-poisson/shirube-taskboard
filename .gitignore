@@ -1,0 +1,8 @@
+# パスワードなどの秘密情報
+.env
+
+# OS・エディタのゴミ
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
