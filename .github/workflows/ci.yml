@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  laravel-ci:
+    name: Docker build and Laravel tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Build PHP image
+        run: docker build --file docker/php/Dockerfile --tag shirube-taskboard-php:ci .
+
+      - name: Show PHP version
+        run: docker run --rm shirube-taskboard-php:ci php -v
+
+      - name: Install Composer dependencies
+        run: docker run --rm --volume "${{ github.workspace }}/src:/var/www/html" --workdir /var/www/html shirube-taskboard-php:ci composer install --no-interaction --prefer-dist
+
+      - name: Prepare Laravel environment
+        run: docker run --rm --volume "${{ github.workspace }}/src:/var/www/html" --workdir /var/www/html shirube-taskboard-php:ci sh -c "cp .env.example .env && php artisan key:generate"
+
+      - name: Run Laravel tests
+        run: docker run --rm --volume "${{ github.workspace }}/src:/var/www/html" --workdir /var/www/html shirube-taskboard-php:ci php artisan test
